@@ -51,7 +51,7 @@ const updateProfileUser = (req, res) => {
   const userId = req.user._id;
   const { name, about } = req.body;
 
-  User.findByIdAndUpdate(userId, { name, about }, { new: true })
+  User.findByIdAndUpdate(userId, { name, about }, { new: true, runValidators: true })
     // eslint-disable-next-line consistent-return
     .then((updatedUser) => {
       if (!updatedUser) {
@@ -63,6 +63,9 @@ const updateProfileUser = (req, res) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         return res.status(ERROR_CODE.BAD_REQUEST).send({ message: 'Некорректный формат ID пользователя' });
+      }
+      if (err.name === 'ValidationError') {
+        return res.status(ERROR_CODE.BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
       }
       res.status(ERROR_CODE.SERVER_ERROR).send({ message: 'На сервере произошла ошибка', error: err });
     });
@@ -72,7 +75,7 @@ const updateAvatarUser = (req, res) => {
   const userId = req.user._id;
   const { avatar } = req.body;
 
-  User.findByIdAndUpdate(userId, { avatar }, { new: true })
+  User.findByIdAndUpdate(userId, { avatar }, { new: true, runValidators: true })
     // eslint-disable-next-line consistent-return
     .then((updatedUser) => {
       if (!updatedUser) {
@@ -84,6 +87,9 @@ const updateAvatarUser = (req, res) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         return res.status(ERROR_CODE.BAD_REQUEST).send({ message: 'Некорректный формат ID пользователя' });
+      }
+      if (err.name === 'ValidationError') {
+        return res.status(ERROR_CODE.BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
       }
       res.status(ERROR_CODE.SERVER_ERROR).send({ message: 'На сервере произошла ошибка', error: err });
     });

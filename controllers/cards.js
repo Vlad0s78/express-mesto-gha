@@ -1,53 +1,53 @@
 const Card = require('../models/card');
-const { ERROR_CODE } = require('../utils/utils');
+const BadRequestError = require('../errors/BadRequestError');
+const NotFoundError = require('../errors/NotFoundError');
+const {
+  createCardValidation,
+  cardIdValidation,
+} = require('../middlewares/validation');
 
-const getCards = (req, res) => {
+const getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => {
       res.send(cards);
     })
-    .catch((err) => {
-      res.status(ERROR_CODE.SERVER_ERROR).send({ message: 'На сервере произошла ошибка', error: err });
-    });
+    .catch(next);
 };
 
-const createCard = (req, res) => {
+const createCard = (req, res, next) => {
   const { name, link } = req.body;
 
   Card.create({ name, link, owner: req.user._id })
     .then((card) => {
       res.send(card);
     })
-    // eslint-disable-next-line consistent-return
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(ERROR_CODE.BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
+        throw new BadRequestError('Переданы некорректные данные');
       }
-      res.status(ERROR_CODE.SERVER_ERROR).send({ message: 'На сервере произошла ошибка' });
+      next(err);
     });
 };
 
-const deleteCard = (req, res) => {
+const deleteCard = (req, res, next) => {
   const { cardId } = req.params;
 
   Card.findByIdAndRemove(cardId)
-    // eslint-disable-next-line consistent-return
     .then((deletedCard) => {
       if (!deletedCard) {
-        return res.status(ERROR_CODE.NOT_FOUND).send({ message: 'Карточка не найдена' });
+        throw new NotFoundError('Карточка не найдена');
       }
       res.send(deletedCard);
     })
-    // eslint-disable-next-line consistent-return
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(ERROR_CODE.BAD_REQUEST).send({ message: 'Некорректный формат ID карточки' });
+        throw new BadRequestError('Некорректный формат ID карточки');
       }
-      res.status(ERROR_CODE.SERVER_ERROR).send({ message: 'На сервере произошла ошибка' });
+      next(err);
     });
 };
 
-const likeCard = (req, res) => {
+const likeCard = (req, res, next) => {
   const { cardId } = req.params;
 
   Card.findByIdAndUpdate(
@@ -55,23 +55,21 @@ const likeCard = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
-    // eslint-disable-next-line consistent-return
     .then((updatedCard) => {
       if (!updatedCard) {
-        return res.status(ERROR_CODE.NOT_FOUND).send({ message: 'Карточка не найдена' });
+        throw new NotFoundError('Карточка не найдена');
       }
       res.send(updatedCard);
     })
-    // eslint-disable-next-line consistent-return
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(ERROR_CODE.BAD_REQUEST).send({ message: 'Некорректный формат ID карточки' });
+        throw new BadRequestError('Некорректный формат ID карточки');
       }
-      res.status(ERROR_CODE.SERVER_ERROR).send({ message: 'На сервере произошла ошибка' });
+      next(err);
     });
 };
 
-const dislikeCard = (req, res) => {
+const dislikeCard = (req, res, next) => {
   const { cardId } = req.params;
 
   Card.findByIdAndUpdate(
@@ -79,26 +77,24 @@ const dislikeCard = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
-    // eslint-disable-next-line consistent-return
     .then((updatedCard) => {
       if (!updatedCard) {
-        return res.status(ERROR_CODE.NOT_FOUND).send({ message: 'Карточка не найдена' });
+        throw new NotFoundError('Карточка не найдена');
       }
       res.send(updatedCard);
     })
-    // eslint-disable-next-line consistent-return
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(ERROR_CODE.BAD_REQUEST).send({ message: 'Некорректный формат ID карточки' });
+        throw new BadRequestError('Некорректный формат ID карточки');
       }
-      res.status(ERROR_CODE.SERVER_ERROR).send({ message: 'На сервере произошла ошибка' });
+      next(err);
     });
 };
 
 module.exports = {
   getCards,
-  createCard,
-  deleteCard,
-  likeCard,
-  dislikeCard,
+  createCard: [createCardValidation, createCard],
+  deleteCard: [cardIdValidation, deleteCard],
+  likeCard: [cardIdValidation, likeCard],
+  dislikeCard: [cardIdValidation, dislikeCard],
 };

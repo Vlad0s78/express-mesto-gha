@@ -4,36 +4,41 @@ const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const userRoutes = require('./routes/users');
 const cardRoutes = require('./routes/cards');
-const { ERROR_CODE } = require('./utils/utils');
+const NotFoundError = require('./errors/NotFoundError');
+const { loginValidation, createUserValidation } = require('./middlewares/validation');
+const authMiddleware = require('./middlewares/auth');
+const errorMiddleware = require('./middlewares/errorMiddleware');
+const { login, createUser } = require('./controllers/users');
 
 const { PORT = 3000 } = process.env;
 
 const app = express();
 app.use(express.json());
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: '64a9cc86983b13aaaa6160da',
-  };
-  next();
-});
-
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
 });
 
-app.use('/users', limiter);
-app.use('/cards', limiter);
-
 app.use(helmet());
+
+app.use('/users', createUserValidation, limiter);
+app.use('/cards', limiter);
 
 app.use('/users', userRoutes);
 app.use('/cards', cardRoutes);
 
-app.use((req, res) => {
-  res.status(ERROR_CODE.NOT_FOUND).send({ message: 'Запрашиваемый ресурс не найден' });
+app.post('/signin', loginValidation, login);
+app.post('/signup', createUserValidation, createUser);
+
+app.use(authMiddleware);
+
+app.use((req, res, next) => {
+  const error = new NotFoundError('Запрашиваемый ресурс не найден');
+  next(error);
 });
+
+app.use(errorMiddleware);
 
 mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
   useNewUrlParser: true,

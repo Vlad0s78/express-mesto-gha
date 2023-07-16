@@ -1,3 +1,5 @@
+// controllers/users.js
+
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
@@ -23,7 +25,9 @@ const getCurrentUser = (req, res, next) => {
       }
       res.send(user);
     })
-    .catch(next);
+    .catch((err) => {
+      next(err);
+    });
 };
 
 const getUsers = (req, res, next) => {
@@ -46,9 +50,10 @@ const getUserById = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        throw new BadRequestError('Некорректный формат ID пользователя');
+        next(new BadRequestError('Некорректный формат ID пользователя'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 
@@ -67,16 +72,22 @@ const createUser = (req, res, next) => {
       avatar,
     }))
     .then((user) => {
-      res.send(user);
+      res.status(201).send({
+        _id: user._id,
+        email: user.email,
+        name: user.name,
+        about: user.about,
+        avatar: user.avatar,
+      });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        throw new BadRequestError('Переданы некорректные данные');
+        next(new BadRequestError('Переданы некорректные данные'));
+      } else if (err.name === 'MongoServerError' && err.code === 11000) {
+        next(new ConflictError('Пользователь с таким email уже существует'));
+      } else {
+        next(err);
       }
-      if (err.name === 'MongoError' && err.code === 11000) {
-        throw new ConflictError('Пользователь с таким email уже существует');
-      }
-      next(err);
     });
 };
 
@@ -97,12 +108,12 @@ const updateProfileUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        throw new BadRequestError('Некорректный формат ID пользователя');
+        next(new BadRequestError('Некорректный формат ID пользователя'));
+      } else if (err.name === 'ValidationError') {
+        next(new BadRequestError('Переданы некорректные данные'));
+      } else {
+        next(err);
       }
-      if (err.name === 'ValidationError') {
-        throw new BadRequestError('Переданы некорректные данные');
-      }
-      next(err);
     });
 };
 
@@ -123,12 +134,12 @@ const updateAvatarUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        throw new BadRequestError('Некорректный формат ID пользователя');
+        next(new BadRequestError('Некорректный формат ID пользователя'));
+      } else if (err.name === 'ValidationError') {
+        next(new BadRequestError('Переданы некорректные данные'));
+      } else {
+        next(err);
       }
-      if (err.name === 'ValidationError') {
-        throw new BadRequestError('Переданы некорректные данные');
-      }
-      next(err);
     });
 };
 

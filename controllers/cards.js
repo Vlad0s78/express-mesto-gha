@@ -19,7 +19,7 @@ const createCard = (req, res, next) => {
 
   Card.create({ name, link, owner: req.user._id })
     .then((card) => {
-      res.send(card);
+      res.status(201).send(card);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -32,11 +32,19 @@ const createCard = (req, res, next) => {
 const deleteCard = (req, res, next) => {
   const { cardId } = req.params;
 
-  Card.findByIdAndRemove(cardId)
-    .then((deletedCard) => {
-      if (!deletedCard) {
+  Card.findById(cardId)
+    .then((card) => {
+      if (!card) {
         throw new NotFoundError('Карточка не найдена');
       }
+
+      if (card.owner.toString() !== req.user._id) {
+        throw new BadRequestError('Недостаточно прав для удаления карточки');
+      }
+
+      return Card.findByIdAndRemove(cardId);
+    })
+    .then((deletedCard) => {
       res.send(deletedCard);
     })
     .catch((err) => {

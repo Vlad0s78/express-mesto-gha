@@ -5,7 +5,6 @@ const bcrypt = require('bcrypt');
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true,
     minlength: [2, 'Минимальная длина поля "name" - 2'],
     maxlength: [30, 'Максимальная длина поля "name" - 30'],
     default: 'Жак-Ив Кусто',
@@ -26,14 +25,12 @@ const userSchema = new mongoose.Schema({
   },
   about: {
     type: String,
-    required: true,
     minlength: [2, 'Минимальная длина поля "about" - 2'],
     maxlength: [30, 'Максимальная длина поля "about" - 30'],
     default: 'Исследователь океана',
   },
   avatar: {
     type: String,
-    required: true,
     minlength: 2,
     default: 'https://cdni.russiatoday.com/rbthmedia/images/2019.10/original/5db175af85600a75c2536ae9.jpg',
     validate: {

@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
+const { errors } = require('celebrate');
 const userRoutes = require('./routes/users');
 const cardRoutes = require('./routes/cards');
 const NotFoundError = require('./errors/NotFoundError');
@@ -10,7 +11,7 @@ const authMiddleware = require('./middlewares/auth');
 const errorMiddleware = require('./middlewares/errorMiddleware');
 const { login, createUser } = require('./controllers/users');
 
-const { PORT = 3000 } = process.env;
+const { PORT = 3000, DB_URL = 'mongodb://127.0.0.1:27017/mestodb' } = process.env;
 
 const app = express();
 app.use(express.json());
@@ -21,8 +22,9 @@ const limiter = rateLimit({
 });
 
 app.use(helmet());
+app.use(limiter);
 
-app.use('/users', createUserValidation, limiter);
+app.use('/users', createUserValidation);
 app.use('/cards', limiter);
 
 app.use('/users', userRoutes);
@@ -38,9 +40,10 @@ app.use((req, res, next) => {
   next(error);
 });
 
+app.use(errors());
 app.use(errorMiddleware);
 
-mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
+mongoose.connect(DB_URL, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });

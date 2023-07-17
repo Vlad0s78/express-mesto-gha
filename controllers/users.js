@@ -1,5 +1,3 @@
-// controllers/users.js
-
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
@@ -148,15 +146,17 @@ const login = (req, res, next) => {
 
   User.findOne({ email })
     .select('+password')
+    // eslint-disable-next-line consistent-return
     .then((user) => {
       if (!user) {
-        throw new UnauthorizedError('Неправильные почта или пароль');
+        return next(new UnauthorizedError('Неправильные почта или пароль'));
       }
 
       bcrypt.compare(password, user.password)
+        // eslint-disable-next-line consistent-return
         .then((isMatch) => {
           if (!isMatch) {
-            throw new UnauthorizedError('Неправильные почта или пароль');
+            return next(new UnauthorizedError('Неправильные почта или пароль'));
           }
 
           const token = jwt.sign({ _id: user._id }, 'secret-key', { expiresIn: '7d' });

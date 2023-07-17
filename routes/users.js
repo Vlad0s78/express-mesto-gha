@@ -15,11 +15,11 @@ const {
 
 const router = express.Router();
 
+router.get('/me', authMiddleware, getCurrentUser);
 router.get('/', authMiddleware, getUsers);
 router.get('/:userId', authMiddleware, getUserById);
 router.patch('/me', [updateUserProfileValidation, authMiddleware], updateProfileUser);
 router.patch('/me/avatar', [updateUserAvatarValidation, authMiddleware], updateAvatarUser);
 router.post('/login', login);
-router.get('/me', authMiddleware, getCurrentUser);
 
 module.exports = router;

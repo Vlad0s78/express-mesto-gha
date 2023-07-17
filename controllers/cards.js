@@ -42,7 +42,7 @@ const deleteCard = (req, res, next) => {
         throw new BadRequestError('Недостаточно прав для удаления карточки');
       }
 
-      return Card.findByIdAndRemove(cardId);
+      return Card.deleteOne({ _id: cardId });
     })
     .then((deletedCard) => {
       res.send(deletedCard);

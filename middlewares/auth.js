@@ -1,11 +1,12 @@
 const jwt = require('jsonwebtoken');
 const UnauthorizedError = require('../errors/UnauthorizedError');
 
+// eslint-disable-next-line consistent-return
 const authMiddleware = (req, res, next) => {
   const token = req.cookies.jwt;
 
   if (!token) {
-    throw new UnauthorizedError('Требуется аутентификация');
+    return next(new UnauthorizedError('Требуется аутентификация'));
   }
 
   try {
@@ -13,7 +14,7 @@ const authMiddleware = (req, res, next) => {
     req.user = payload;
     next();
   } catch (error) {
-    throw new UnauthorizedError('Неверный токен аутентификации');
+    return next(new UnauthorizedError('Неверный токен аутентификации'));
   }
 };
 

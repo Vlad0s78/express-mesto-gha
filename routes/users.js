@@ -18,8 +18,8 @@ const router = express.Router();
 router.get('/me', authMiddleware, getCurrentUser);
 router.get('/', authMiddleware, getUsers);
 router.get('/:userId', authMiddleware, getUserById);
-router.patch('/me', [updateUserProfileValidation, authMiddleware], updateProfileUser);
-router.patch('/me/avatar', [updateUserAvatarValidation, authMiddleware], updateAvatarUser);
+router.patch('/me', [authMiddleware, updateUserProfileValidation], updateProfileUser);
+router.patch('/me/avatar', [authMiddleware, updateUserAvatarValidation], updateAvatarUser);
 router.post('/login', login);
 
 module.exports = router;

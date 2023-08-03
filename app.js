@@ -27,15 +27,14 @@ app.use(helmet());
 app.use(limiter);
 
 app.use('/users', createUserValidation);
-app.use('/cards', limiter);
+
+app.use(authMiddleware);
 
 app.use('/users', userRoutes);
 app.use('/cards', cardRoutes);
 
 app.post('/signin', loginValidation, login);
-app.post('/signup', createUserValidation, createUser);
-
-app.use(authMiddleware);
+app.post('/signup', createUser, login); // Обновлено здесь
 
 app.use((req, res, next) => {
   const error = new NotFoundError('Запрашиваемый ресурс не найден');

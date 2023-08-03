@@ -27,12 +27,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     minlength: [2, 'Минимальная длина поля "about" - 2'],
     maxlength: [30, 'Максимальная длина поля "about" - 30'],
-    default: 'Исследователь океана',
+    default: 'Исследователь',
   },
   avatar: {
     type: String,
     minlength: 2,
-    default: 'https://cdni.russiatoday.com/rbthmedia/images/2019.10/original/5db175af85600a75c2536ae9.jpg',
+    default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
     validate: {
       validator: (value) => validator.isURL(value),
       message: 'Некорректный формат URL для аватара',

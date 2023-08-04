@@ -8,7 +8,6 @@ const userRoutes = require('./routes/users');
 const cardRoutes = require('./routes/cards');
 const NotFoundError = require('./errors/NotFoundError');
 const { loginValidation, createUserValidation } = require('./middlewares/validation');
-const authMiddleware = require('./middlewares/auth');
 const errorMiddleware = require('./middlewares/errorMiddleware');
 const { login, createUser } = require('./controllers/users');
 
@@ -26,15 +25,11 @@ const limiter = rateLimit({
 app.use(helmet());
 app.use(limiter);
 
-app.use('/users', createUserValidation);
-
 app.use('/users', userRoutes);
 app.use('/cards', cardRoutes);
 
 app.post('/signin', loginValidation, login);
 app.post('/signup', createUserValidation, createUser);
-
-app.use(authMiddleware);
 
 app.use((req, res, next) => {
   const error = new NotFoundError('Запрашиваемый ресурс не найден');

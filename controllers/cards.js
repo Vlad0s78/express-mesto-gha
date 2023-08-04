@@ -1,6 +1,7 @@
 const Card = require('../models/card');
 const BadRequestError = require('../errors/BadRequestError');
 const NotFoundError = require('../errors/NotFoundError');
+const ForbiddenError = require('../errors/ForbiddenError');
 const {
   createCardValidation,
   cardIdValidation,
@@ -39,19 +40,23 @@ const deleteCard = (req, res, next) => {
       }
 
       if (card.owner.toString() !== req.user._id) {
-        throw new BadRequestError('Недостаточно прав для удаления карточки');
+        throw new ForbiddenError('Нет доступа для удаления чужой карточки');
       }
 
-      return Card.deleteOne({ _id: cardId });
+      return Card.findByIdAndRemove(cardId);
     })
     .then((deletedCard) => {
+      if (!deletedCard) {
+        throw new NotFoundError('Карточка не найдена');
+      }
       res.send(deletedCard);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        throw new BadRequestError('Некорректный формат ID карточки');
+        next(new BadRequestError('Некорректный формат ID карточки'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 

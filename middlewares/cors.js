@@ -1,5 +1,9 @@
 const DEFAULT_ALLOWED_METHODS = 'GET,HEAD,PUT,PATCH,POST,DELETE';
 const allowedCors = [
+  'https://vladislove.students.nomoreparties.co',
+  'https://api.vladislove.students.nomoreparties.co',
+  'http://vladislove.students.nomoreparties.co',
+  'http://api.vladislove.students.nomoreparties.co',
   'http://localhost:3000',
   'http://localhost:3001',
 ];

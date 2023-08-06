@@ -144,7 +144,7 @@ const updateAvatarUser = (req, res, next) => {
 const login = (req, res, next) => {
   const { email, password } = req.body;
 
-  User.findOne({ email })
+  return User.findOne({ email })
     .select('+password')
     // eslint-disable-next-line consistent-return
     .then((user) => {
@@ -159,7 +159,7 @@ const login = (req, res, next) => {
             return next(new UnauthorizedError('Неправильные почта или пароль'));
           }
 
-          const token = jwt.sign({ _id: user._id }, 'secret-key', { expiresIn: '7d' });
+          const token = jwt.sign({ _id: user._id }, process.env.NODE_ENV !== 'production' ? 'super-secret' : process.env.JWT_SECRET, { expiresIn: '7d' });
 
           res.cookie('jwt', token, {
             httpOnly: true,
@@ -173,6 +173,13 @@ const login = (req, res, next) => {
     .catch(next);
 };
 
+const logout = (req, res) => {
+  try {
+    res.clearCookie('jwt', { httpOnly: true })
+      .send({ exit: 'Вы вышли.' });
+  } catch (err) { throw new Error(err); }
+};
+
 module.exports = {
   getUsers,
   getUserById: [getUserValidation, getUserById],
@@ -181,4 +188,5 @@ module.exports = {
   updateAvatarUser: [updateUserAvatarValidation, updateAvatarUser],
   login: [loginValidation, login],
   getCurrentUser,
+  logout,
 };
